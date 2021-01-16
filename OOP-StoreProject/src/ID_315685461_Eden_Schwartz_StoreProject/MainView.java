@@ -63,8 +63,15 @@ public class MainView extends Application {
 				viewModel.status.setFill(Color.RED);
 				viewModel.status.setText(" Product Number can not be empty.");
 			} else {
-				store.showProduct(viewModel, output, input);
+				store.showProductInfoByNumber(viewModel, output, input);
 			}
+
+		});
+		
+		/* show all products - button action */
+		viewModel.getBtnSshowAllProducts().setOnAction(e -> {
+			
+			store.showAllProducts(viewModel, output, input);
 
 		});
 		
