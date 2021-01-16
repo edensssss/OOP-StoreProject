@@ -18,13 +18,10 @@ public class MainView extends Application {
 	@Override
 	public void start(Stage primaryStage) throws Exception {
 
-		/* Designing the myPane */
+		/*design the viewModel and add to the scene*/
 		viewModel.setPadding(new Insets(20));
 		viewModel.setPrefSize(650, 400);
-
-
 		Scene scene = new Scene(viewModel);
-
 
 		/* placing the scene in the stage */
 		primaryStage.centerOnScreen();
