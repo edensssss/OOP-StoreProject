@@ -113,6 +113,7 @@ public class StoreView extends Application {
 
 		/* vBox pane design */
 		mainPane.setSpacing(20);
+		mainPane.setPadding(new Insets(20));
 
 		/* to able the use of number only in textField: tfPriceOfProduct */
 		tfPriceOfProduct.setTextFormatter(new TextFormatter<>(c -> {
@@ -214,7 +215,7 @@ public class StoreView extends Application {
 		 */
 
 		// Creating Scenes
-		Scene scene = new Scene(mainPane, 1200, 700);
+		Scene scene = new Scene(mainPane, 650, 700);
 		primaryStage.setScene(scene);
 		primaryStage.centerOnScreen();
 		primaryStage.setResizable(false);
