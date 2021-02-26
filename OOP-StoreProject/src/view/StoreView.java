@@ -6,6 +6,7 @@ import javafx.application.Application;
 import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
 import javafx.geometry.Insets;
+import javafx.geometry.Pos;
 import javafx.scene.Scene;
 import javafx.scene.control.Button;
 import javafx.scene.control.ButtonBase;
@@ -31,7 +32,7 @@ public class StoreView extends Application {
 	VBox mainPane = new VBox();
 
 	// headlines texts nodes
-	Text text = new Text("Welcome to my store");
+	Text text = new Text("Welcome to the store");
 	Text customerDetails = new Text("Customer datails: ");
 	Text productDetails = new Text("Product datails: ");
 	Text storeStatus = new Text("Store status: ");
@@ -39,7 +40,7 @@ public class StoreView extends Application {
 
 	// products nodes
 	Label labelProductName = new Label("Product name:    ");
-	Label labelProductNumber = new Label("Product number: ");
+	Label labelProductNumber = new Label("Product number:         ");
 	Label priceOfProduct = new Label("Product's price:   ");
 	Label priceOfProductSale = new Label("Product's price of sale:");
 
@@ -75,8 +76,7 @@ public class StoreView extends Application {
 	public StoreView(Stage primaryStage) {
 
 		userPane.getChildren().addAll(lblException);
-		productNamePane.getChildren().addAll(labelProductName, tfProductName);
-		productNumberPane.getChildren().addAll(labelProductNumber, tfProductNumber);
+		productNamePane.getChildren().addAll(labelProductName, tfProductName, labelProductNumber, tfProductNumber);
 		buttonsPane.getChildren().addAll(btnInsertProduct, btnShowProductInfoByNumber, btnSshowAllProducts);
 		pricesPane.getChildren().addAll(priceOfProduct, tfPriceOfProduct, priceOfProductSale, tfPriceOfProductSale);
 		customerNamePane.getChildren().addAll(customerName, tfCustomerName);
@@ -84,7 +84,7 @@ public class StoreView extends Application {
 		customerDetailsPane.getChildren().addAll(customerNamePane, customerPhoneNumberPane, checkBox);
 
 		/* design headline */
-		text.setFill(Color.BLUEVIOLET);
+		text.setFill(Color.ROYALBLUE);
 		text.setStroke(Color.BLACK);
 		text.setStyle("-fx-font: 40 Allan;");
 
@@ -110,6 +110,7 @@ public class StoreView extends Application {
 		/* add all nodes to pane */
 		mainPane.getChildren().addAll(text, productDetails, productNamePane, productNumberPane, pricesPane,
 				customerDetails, customerDetailsPane, userPane, buttonsPane);
+		mainPane.setAlignment(Pos.CENTER);
 
 		/* vBox pane design */
 		mainPane.setSpacing(20);
@@ -215,7 +216,7 @@ public class StoreView extends Application {
 		 */
 
 		// Creating Scenes
-		Scene scene = new Scene(mainPane, 650, 700);
+		Scene scene = new Scene(mainPane, 650, 650);
 		primaryStage.setScene(scene);
 		primaryStage.centerOnScreen();
 		primaryStage.setResizable(false);
