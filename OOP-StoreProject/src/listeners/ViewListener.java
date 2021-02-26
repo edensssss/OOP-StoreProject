@@ -6,7 +6,7 @@ import model.Product;
 
 public interface ViewListener {
 	
-	
+	public void selectionSortToModel(String type);
 
 	public void addProductToModel(String name, String catalogNumber, int price, 
 			int priceOfSale, String customerName, String phoneNumber, boolean notifications);

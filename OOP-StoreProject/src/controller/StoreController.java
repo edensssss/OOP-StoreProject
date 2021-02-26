@@ -21,6 +21,17 @@ public class StoreController implements StoreListener, ViewListener {
 		view.registerListeners(this);
 		storeCommand.getStore().registerListeners(this);
 	}
+	
+	@Override
+	public void selectionSortToModel(String type) {
+		try {
+			storeCom.selectSortToModel(type);
+		} catch (Exception e) {
+			view.getLblException().setText(e.getMessage());
+			view.getLblException().setVisible(true);
+		}
+		
+	}
 
 	@Override
 	public void addProductToModel(String name, String catalogNumber, int price, int priceOfSale, String customerName,
@@ -160,8 +171,23 @@ public class StoreController implements StoreListener, ViewListener {
 	@Override
 	public void fireMessagesToUI(StringBuffer messages) {
 		view.getLblException().setVisible(true);
-		view.getLblException().setText(messages.toString());	
+		view.getLblException().setText(messages.toString());
+		
+		String saleMsg = messages.toString();
+		String[] allMessages = saleMsg.split("\n");
+		int numOfCustormers = allMessages.length;
+		view.createLblCustomers(numOfCustormers);
+		
+		for (int i = 0; i < numOfCustormers; i++) {
+			view.createNewMsg(i, allMessages[i]);
+			view.getLblCustomers()[i].setVisible(false);
+			// need to add "vbox" and add children label[i]
+			view.getScrollBar().setContent(view.getLblCustomers()[i]);
+		}
+	
 	}
+
+
 
 
 }

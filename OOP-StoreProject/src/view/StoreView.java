@@ -3,21 +3,26 @@ package view;
 import java.util.Vector;
 
 import javafx.application.Application;
+import javafx.application.Platform;
 import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
 import javafx.geometry.Insets;
+import javafx.geometry.Pos;
 import javafx.scene.Scene;
 import javafx.scene.control.Button;
 import javafx.scene.control.ButtonBase;
 import javafx.scene.control.CheckBox;
 import javafx.scene.control.Label;
 import javafx.scene.control.RadioButton;
-import javafx.scene.control.TextArea;
+import javafx.scene.control.ScrollPane;
 import javafx.scene.control.TextField;
 import javafx.scene.control.TextFormatter;
 import javafx.scene.control.ToggleGroup;
+import javafx.scene.layout.BorderPane;
+import javafx.scene.layout.GridPane;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.Pane;
+import javafx.scene.layout.StackPane;
 import javafx.scene.layout.VBox;
 import javafx.scene.paint.Color;
 import javafx.scene.text.Font;
@@ -25,15 +30,17 @@ import javafx.scene.text.FontWeight;
 import javafx.scene.text.Text;
 import javafx.stage.Stage;
 import listeners.ViewListener;
-import javafx.geometry.Pos;
 
 public class StoreView extends Application {
 
 	private static Vector<ViewListener> allListeners = new Vector<ViewListener>();
 
+	Boolean selectionByUser = true;
+
 	// main pane: VBox
+	StackPane stackPane = new StackPane();
 	VBox mainPane = new VBox();
-	VBox selectSort = new VBox();
+//	VBox selectSort = new VBox();
 
 	// headlines texts nodes
 	Text text = new Text("Welcome to the store");
@@ -48,6 +55,7 @@ public class StoreView extends Application {
 	Label labelProductNumber = new Label("Product number:              ");
 	Label priceOfProduct = new Label("Product's price:                ");
 	Label priceOfProductSale = new Label("Product's price of sale:     ");
+	Label labelMessege = new Label("Enter messege here: ");
 
 	// customer nodes
 	Label customerName = new Label("Customer name:               ");
@@ -61,19 +69,21 @@ public class StoreView extends Application {
 	static TextField tfPriceOfProductSale = new TextField();
 	static TextField tfCustomerName = new TextField();
 	static TextField tfCustomerPhoneNumber = new TextField();
+	static TextField tfMessege = new TextField();
 
-	// text area for file output
-	// TextArea textArea = new TextArea();
+	// scroll bar for output
+	ScrollPane scrollBar = new ScrollPane();
 
 	// Radio buttons
 	ToggleGroup tglSort = new ToggleGroup();
 	RadioButton rbASC = new RadioButton("Ascending");
 	RadioButton rbDESC = new RadioButton("Descending");
-	RadioButton rbDefault = new RadioButton("Default");
+	RadioButton rbInsert = new RadioButton("Insertion");
 
+	Pane messegePane = new HBox(40);
 	Pane hBPane = new HBox(40);
 	Pane textFieldsPane = new VBox(20);
-	Pane rbPane = new HBox(40);
+	Pane rbPane = new VBox(40);
 	Pane productNamePane = new HBox(20);
 	Pane productNumberPane = new HBox(20);
 	Pane productPricePane = new HBox(20);
@@ -84,38 +94,51 @@ public class StoreView extends Application {
 	Pane customerDetailsPane = new VBox(20);
 	Pane buttonsPane = new HBox(20);
 	Pane userPane = new HBox(20);
+	Pane rightPane = new VBox(20);
 
 	Button btnInsertProduct = new Button("Insert New Product");
 	Button btnShowProductInfoByNumber = new Button("Search Product");
 	Button btnShowAllProducts = new Button("Show All Products");
 	Button btnRemoveLastProductAdded = new Button("Remove Last Product");
-	Button btnShowProfit = new Button("Profit");
+	Button btnShowProfit = new Button("Show profit");
 	Button btnSendMessage = new Button("Send Message");
 	Button btnSubmitSort = new Button("Submit");
 
 	// label for exeptions
 	Label lblException = new Label();
 
+	private Stage primaryStage;
+
 	public StoreView(Stage primaryStage) {
 
 		// creating tgl group for RBs
 		rbASC.setToggleGroup(tglSort);
 		rbDESC.setToggleGroup(tglSort);
-		rbDefault.setToggleGroup(tglSort);
+		rbInsert.setToggleGroup(tglSort);
 
+		// scroll bar
+		scrollBar.setContent(lblException);
+		scrollBar.setPrefSize(400, 350);
+
+		activateStartingScreen();
 		productNamePane.getChildren().addAll(labelProductName, tfProductName);
 		productNumberPane.getChildren().addAll(labelProductNumber, tfProductNumber);
 		productDetailsPane.getChildren().addAll(productDetails, productNamePane, productNumberPane, productPricePane,
 				productPriceOfSalePane);
 		productPricePane.getChildren().addAll(priceOfProduct, tfPriceOfProduct);
 		productPriceOfSalePane.getChildren().addAll(priceOfProductSale, tfPriceOfProductSale);
-		rbPane.getChildren().addAll(selection, rbASC, rbDESC, rbDefault, btnSubmitSort);
-		userPane.getChildren().addAll(lblException);
+		rbPane.getChildren().addAll(selection, rbASC, rbDESC, rbInsert, btnSubmitSort);
+		userPane.getChildren().addAll(scrollBar, messegePane);
+		messegePane.getChildren().addAll(labelMessege, tfMessege);
+		rightPane.getChildren().addAll(userPane, messegePane);
 		buttonsPane.getChildren().addAll(btnInsertProduct, btnShowProductInfoByNumber, btnShowAllProducts,
 				btnRemoveLastProductAdded, btnShowProfit, btnSendMessage);
 		customerNamePane.getChildren().addAll(customerName, tfCustomerName);
 		customerPhoneNumberPane.getChildren().addAll(customerPhoneNumber, tfCustomerPhoneNumber);
 		customerDetailsPane.getChildren().addAll(customerNamePane, customerPhoneNumberPane, checkBox);
+
+		/* design rbPane */
+		selection.setStyle("-fx-font: 16 Allan;");
 
 		/* design headline */
 		text.setFill(Color.ROYALBLUE);
@@ -123,9 +146,9 @@ public class StoreView extends Application {
 		text.setStyle("-fx-font: 40 Allan;");
 
 		/* design user massages pane */
-		userPane.setStyle("-fx-border-color: black");
-		userPane.setMinHeight(100);
-		userPane.setMinWidth(400);
+//		userPane.setStyle("-fx-border-color: black");
+		// userPane.setMinHeight(350);
+		// userPane.setMinWidth(400);
 		status.setFont(Font.font("Verdana", FontWeight.BOLD, 12));
 
 		/* design buttonsPane */
@@ -147,7 +170,7 @@ public class StoreView extends Application {
 
 		/* add all nodes to pane */
 		mainPane.getChildren().addAll(text, hBPane, buttonsPane);
-		hBPane.getChildren().addAll(textFieldsPane, userPane);
+		hBPane.getChildren().addAll(textFieldsPane, rightPane);
 		textFieldsPane.getChildren().addAll(productDetails, productDetailsPane, customerDetails, customerDetailsPane);
 
 		mainPane.setAlignment(Pos.CENTER);
@@ -181,6 +204,24 @@ public class StoreView extends Application {
 				return c;
 			}
 		}));
+
+		btnSubmitSort.setOnAction(new EventHandler<ActionEvent>() {
+			@Override
+			public void handle(ActionEvent event) {
+
+				RadioButton selected = (RadioButton) tglSort.getSelectedToggle();
+				String sort = selected.getText();
+
+				for (ViewListener l : allListeners) {
+					l.selectionSortToModel(sort);
+				}
+				
+				stackPane.getChildren().addAll(mainPane);
+				rbPane.setVisible(false);
+				
+
+			}
+		});
 
 		// Main stage button handler
 		btnInsertProduct.setOnAction(new EventHandler<ActionEvent>() {
@@ -276,17 +317,29 @@ public class StoreView extends Application {
 			@Override
 			public void handle(ActionEvent event) {
 
-				// need to add TF for message input
-				// need to make Threads
 				for (ViewListener l : allListeners) {
-					l.sendMessageToModel("Test");
+					l.sendMessageToModel(tfMessege.getText());
 				}
 
+				Label customers[] = getLblCustomers();
+				System.out.println(customers);
+				Thread tr = new Thread(() -> {
+					try {
+						for (Label l : customers) {
+							Thread.sleep(2000);
+							Platform.runLater(() -> {
+								l.setVisible(true);
+							});
+						}
+					} catch (Exception e) {
+					}
+				});
+				tr.start();
 			}
 		});
 
-		// Creating Scenes
-		Scene scene = new Scene(mainPane, 800, 600);
+		Scene scene = new Scene(stackPane, 830, 650);
+		 
 		primaryStage.setScene(scene);
 		primaryStage.centerOnScreen();
 		primaryStage.setResizable(false);
@@ -294,6 +347,37 @@ public class StoreView extends Application {
 		primaryStage.setTitle("DisplayMovingMessage");
 		primaryStage.show();
 
+	}
+
+	private void activateStartingScreen() {
+
+		stackPane.getChildren().addAll(rbPane);
+		rbPane.setPadding(new Insets(100));
+		// getting selection and activate the main screen by:
+	//	 stackPane.getChildren().addAll(mainPane);
+
+	}
+
+	
+	
+	public ScrollPane getScrollBar() {
+		return scrollBar;
+	}
+
+	public void setScrollBar(ScrollPane scrollBar) {
+		this.scrollBar = scrollBar;
+	}
+
+	public void createLblCustomers(int num) {
+		Label lblCustomerMsg[] = new Label[num];
+	}
+
+	public Label[] getLblCustomers() {
+		return getLblCustomers();
+	}
+
+	public void createNewMsg(int index, String msg) {
+		getLblCustomers()[index] = new Label(msg);
 	}
 
 	private ButtonBase btnInsertProduct() {
