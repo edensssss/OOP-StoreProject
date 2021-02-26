@@ -4,7 +4,11 @@ import java.io.Serializable;
 import java.util.Observable;
 import java.util.Observer;
 
-public class Customer implements Observer, Serializable{
+import observ.Receiver;
+import observ.SaleMessage;
+import observ.Sender;
+
+public class Customer implements Observer, Serializable,Receiver{
 
 	/**
 	 * 
@@ -48,14 +52,21 @@ public class Customer implements Observer, Serializable{
 
 	@Override
 	public String toString() {
-		return "Customer [name=" + name + ", phoneNumber=" + phoneNumber 
-				+ ", notifications=" + notifications + "]";
+		return "Name: " + name + "\tPhone: " + phoneNumber + "\n";
 	}
 
 	@Override
 	public void update(Observable obs, Object obj) {
-		if(obs instanceof Sale)
+		if(obs instanceof SaleMessage)
 			System.out.println(name + " Hi!\nNews Updated!\n" + obs);
+	}
+
+
+	@Override
+	public String receiveMessage(Sender s, SaleMessage saleMsg) {
+		StringBuffer msg = new StringBuffer();
+		msg.append("New Message Has Arrived ---> From: " + this.name + "\t" + this.phoneNumber +"\n");
+		return msg.toString();
 	}
 
 

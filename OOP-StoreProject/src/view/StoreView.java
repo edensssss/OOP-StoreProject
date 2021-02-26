@@ -6,14 +6,16 @@ import javafx.application.Application;
 import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
 import javafx.geometry.Insets;
-import javafx.geometry.Pos;
 import javafx.scene.Scene;
 import javafx.scene.control.Button;
 import javafx.scene.control.ButtonBase;
 import javafx.scene.control.CheckBox;
 import javafx.scene.control.Label;
+import javafx.scene.control.RadioButton;
+import javafx.scene.control.TextArea;
 import javafx.scene.control.TextField;
 import javafx.scene.control.TextFormatter;
+import javafx.scene.control.ToggleGroup;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.Pane;
 import javafx.scene.layout.VBox;
@@ -23,6 +25,7 @@ import javafx.scene.text.FontWeight;
 import javafx.scene.text.Text;
 import javafx.stage.Stage;
 import listeners.ViewListener;
+import javafx.geometry.Pos;
 
 public class StoreView extends Application {
 
@@ -30,6 +33,7 @@ public class StoreView extends Application {
 
 	// main pane: VBox
 	VBox mainPane = new VBox();
+	VBox selectSort = new VBox();
 
 	// headlines texts nodes
 	Text text = new Text("Welcome to the store");
@@ -37,12 +41,13 @@ public class StoreView extends Application {
 	Text productDetails = new Text("Product datails: ");
 	Text storeStatus = new Text("Store status: ");
 	Text status = new Text("");
+	Text selection = new Text("Please select sort type");
 
 	// products nodes
-	Label labelProductName = new Label("Product name:    ");
-	Label labelProductNumber = new Label("Product number:         ");
-	Label priceOfProduct = new Label("Product's price:   ");
-	Label priceOfProductSale = new Label("Product's price of sale:");
+	Label labelProductName = new Label("Product name:                  ");
+	Label labelProductNumber = new Label("Product number:              ");
+	Label priceOfProduct = new Label("Product's price:                ");
+	Label priceOfProductSale = new Label("Product's price of sale:     ");
 
 	// customer nodes
 	Label customerName = new Label("Customer name:               ");
@@ -57,28 +62,57 @@ public class StoreView extends Application {
 	static TextField tfCustomerName = new TextField();
 	static TextField tfCustomerPhoneNumber = new TextField();
 
+	// text area for file output
+	// TextArea textArea = new TextArea();
+
+	// Radio buttons
+	ToggleGroup tglSort = new ToggleGroup();
+	RadioButton rbASC = new RadioButton("Ascending");
+	RadioButton rbDESC = new RadioButton("Descending");
+	RadioButton rbDefault = new RadioButton("Default");
+
+	Pane hBPane = new HBox(40);
+	Pane textFieldsPane = new VBox(20);
+	Pane rbPane = new HBox(40);
 	Pane productNamePane = new HBox(20);
 	Pane productNumberPane = new HBox(20);
-	Pane pricesPane = new HBox(20);
+	Pane productPricePane = new HBox(20);
+	Pane productPriceOfSalePane = new HBox(20);
+	Pane productDetailsPane = new VBox(20);
 	Pane customerNamePane = new HBox(20);
 	Pane customerPhoneNumberPane = new HBox(20);
 	Pane customerDetailsPane = new VBox(20);
 	Pane buttonsPane = new HBox(20);
 	Pane userPane = new HBox(20);
 
-	Button btnInsertProduct = new Button("INSERT NEW PRODUCT");
-	Button btnShowProductInfoByNumber = new Button("SHOW PRODUCT INFO BY NUMBER");
-	Button btnSshowAllProducts = new Button("SHOW ALL PRODUCTS");
+	Button btnInsertProduct = new Button("Insert New Product");
+	Button btnShowProductInfoByNumber = new Button("Search Product");
+	Button btnShowAllProducts = new Button("Show All Products");
+	Button btnRemoveLastProductAdded = new Button("Remove Last Product");
+	Button btnShowProfit = new Button("Profit");
+	Button btnSendMessage = new Button("Send Message");
+	Button btnSubmitSort = new Button("Submit");
 
 	// label for exeptions
 	Label lblException = new Label();
 
 	public StoreView(Stage primaryStage) {
 
+		// creating tgl group for RBs
+		rbASC.setToggleGroup(tglSort);
+		rbDESC.setToggleGroup(tglSort);
+		rbDefault.setToggleGroup(tglSort);
+
+		productNamePane.getChildren().addAll(labelProductName, tfProductName);
+		productNumberPane.getChildren().addAll(labelProductNumber, tfProductNumber);
+		productDetailsPane.getChildren().addAll(productDetails, productNamePane, productNumberPane, productPricePane,
+				productPriceOfSalePane);
+		productPricePane.getChildren().addAll(priceOfProduct, tfPriceOfProduct);
+		productPriceOfSalePane.getChildren().addAll(priceOfProductSale, tfPriceOfProductSale);
+		rbPane.getChildren().addAll(selection, rbASC, rbDESC, rbDefault, btnSubmitSort);
 		userPane.getChildren().addAll(lblException);
-		productNamePane.getChildren().addAll(labelProductName, tfProductName, labelProductNumber, tfProductNumber);
-		buttonsPane.getChildren().addAll(btnInsertProduct, btnShowProductInfoByNumber, btnSshowAllProducts);
-		pricesPane.getChildren().addAll(priceOfProduct, tfPriceOfProduct, priceOfProductSale, tfPriceOfProductSale);
+		buttonsPane.getChildren().addAll(btnInsertProduct, btnShowProductInfoByNumber, btnShowAllProducts,
+				btnRemoveLastProductAdded, btnShowProfit, btnSendMessage);
 		customerNamePane.getChildren().addAll(customerName, tfCustomerName);
 		customerPhoneNumberPane.getChildren().addAll(customerPhoneNumber, tfCustomerPhoneNumber);
 		customerDetailsPane.getChildren().addAll(customerNamePane, customerPhoneNumberPane, checkBox);
@@ -91,12 +125,16 @@ public class StoreView extends Application {
 		/* design user massages pane */
 		userPane.setStyle("-fx-border-color: black");
 		userPane.setMinHeight(100);
+		userPane.setMinWidth(400);
 		status.setFont(Font.font("Verdana", FontWeight.BOLD, 12));
 
 		/* design buttonsPane */
 		btnInsertProduct.setTextFill(Color.BLACK);
 		btnShowProductInfoByNumber.setTextFill(Color.BLACK);
-		btnSshowAllProducts.setTextFill(Color.BLACK);
+		btnShowAllProducts.setTextFill(Color.BLACK);
+		btnRemoveLastProductAdded.setTextFill(Color.BLACK);
+		btnShowProfit.setTextFill(Color.BLACK);
+		btnSendMessage.setTextFill(Color.BLACK);
 		buttonsPane.setPadding(new Insets(25));
 
 		/* design headline of customerDetails & productDetails */
@@ -108,8 +146,10 @@ public class StoreView extends Application {
 		storeStatus.setStyle("-fx-font: 20 Allan;");
 
 		/* add all nodes to pane */
-		mainPane.getChildren().addAll(text, productDetails, productNamePane, productNumberPane, pricesPane,
-				customerDetails, customerDetailsPane, userPane, buttonsPane);
+		mainPane.getChildren().addAll(text, hBPane, buttonsPane);
+		hBPane.getChildren().addAll(textFieldsPane, userPane);
+		textFieldsPane.getChildren().addAll(productDetails, productDetailsPane, customerDetails, customerDetailsPane);
+
 		mainPane.setAlignment(Pos.CENTER);
 
 		/* vBox pane design */
@@ -163,7 +203,15 @@ public class StoreView extends Application {
 						l.addProductToModel(name, catalogProduct, price, priceOfSale, customerName, phoneNumber,
 								notifications);
 					}
-					// tfPlayerName.clear();
+					// clear after insert
+					tfProductName.clear();
+					tfProductNumber.clear();
+					tfPriceOfProduct.clear();
+					tfPriceOfProductSale.clear();
+
+					tfCustomerName.clear();
+					tfCustomerPhoneNumber.clear();
+					checkBox.setSelected(false);
 				} else {
 					lblException.setText("Product number can't be empty");
 					lblException.setVisible(true);
@@ -184,7 +232,6 @@ public class StoreView extends Application {
 					for (ViewListener l : allListeners) {
 						l.loadProductToModel(catalogProduct);
 					}
-					// tfPlayerName.clear();
 				} else {
 					lblException.setText("Product number can't be empty");
 					lblException.setVisible(true);
@@ -192,31 +239,54 @@ public class StoreView extends Application {
 			}
 		});
 
-		/*
-		 * insert product - button action btnInsertProduct().setOnAction(e -> {
-		 * 
-		 * 
-		 * //add to the listeners
-		 * 
-		 * });
-		 * 
-		 * show product by number - button action
-		 * btnShowProductInfoByNumber().setOnAction(e -> {
-		 * 
-		 * //add to the listeners
-		 * 
-		 * 
-		 * });
-		 * 
-		 * show all products - button action btnShowAllProducts().setOnAction(e -> {
-		 * 
-		 * //add to the listeners
-		 * 
-		 * });
-		 */
+		btnShowAllProducts.setOnAction(new EventHandler<ActionEvent>() {
+			@Override
+			public void handle(ActionEvent event) {
+
+				for (ViewListener l : allListeners) {
+					l.showProductsToModel();
+				}
+
+			}
+		});
+
+		btnRemoveLastProductAdded.setOnAction(new EventHandler<ActionEvent>() {
+			@Override
+			public void handle(ActionEvent event) {
+
+				for (ViewListener l : allListeners) {
+					l.removeLastProductAddedToModel();
+				}
+
+			}
+		});
+
+		btnShowProfit.setOnAction(new EventHandler<ActionEvent>() {
+			@Override
+			public void handle(ActionEvent event) {
+
+				for (ViewListener l : allListeners) {
+					l.showProfitToModel();
+				}
+
+			}
+		});
+
+		btnSendMessage.setOnAction(new EventHandler<ActionEvent>() {
+			@Override
+			public void handle(ActionEvent event) {
+
+				// need to add TF for message input
+				// need to make Threads
+				for (ViewListener l : allListeners) {
+					l.sendMessageToModel("Test");
+				}
+
+			}
+		});
 
 		// Creating Scenes
-		Scene scene = new Scene(mainPane, 650, 650);
+		Scene scene = new Scene(mainPane, 800, 600);
 		primaryStage.setScene(scene);
 		primaryStage.centerOnScreen();
 		primaryStage.setResizable(false);
@@ -419,11 +489,11 @@ public class StoreView extends Application {
 	}
 
 	public Pane getPricesPane() {
-		return pricesPane;
+		return customerDetailsPane;
 	}
 
 	public void setPricesPane(Pane pricesPane) {
-		this.pricesPane = pricesPane;
+		this.customerDetailsPane = pricesPane;
 	}
 
 	public Pane getCustomerNamePane() {
@@ -475,11 +545,15 @@ public class StoreView extends Application {
 	}
 
 	public Button getBtnSshowAllProducts() {
-		return btnSshowAllProducts;
+		return btnShowAllProducts;
+	}
+
+	public Button getBtnRemoveLastProductAdded() {
+		return btnRemoveLastProductAdded;
 	}
 
 	public void setBtnSshowAllProducts(Button btnSshowAllProducts) {
-		this.btnSshowAllProducts = btnSshowAllProducts;
+		this.btnShowAllProducts = btnSshowAllProducts;
 	}
 
 	public void clearTextFields() {
@@ -504,6 +578,10 @@ public class StoreView extends Application {
 
 	public Label getLblException() {
 		return lblException;
+	}
+
+	public void setLblException(String string) {
+		lblException.setText(string);
 	}
 
 }

@@ -12,9 +12,10 @@ public interface StoreListener {
 	
 	
 	void fireProductToUI(Product product);
-	
-	
-	void fireCustomersToUI(ArrayList<Customer> customers);
+	//void fireCustomersToUI(ArrayList<Customer> customers);
+	void fireAllProductsToUI(TreeMap<String, Product> products);
+	void fireProfitToUI(TreeMap<String, Product> products);
+	void fireMessagesToUI(StringBuffer messages);
 	
 	//add functions here
 	

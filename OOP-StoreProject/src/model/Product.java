@@ -69,8 +69,7 @@ public class Product implements Comparable<Product>, Serializable {
 
 	@Override
 	public String toString() {
-		return "Product [name=" + name + ", number=" + catalogNumber + ", price=" + price + ", priceOfSale=" + priceOfSale
-				+"\n" + "customer=" + customer + "]";
+		return "Name: " + name + "\nCatalog num: " + catalogNumber + "\nPrice: " + price + "\tPrice sale: " + priceOfSale + "\n" + customer.toString();
 	}
 
 	@Override

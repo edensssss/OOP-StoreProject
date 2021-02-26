@@ -1,5 +1,6 @@
 package main;
 
+import command.StoreCommand;
 import controller.StoreController;
 import javafx.application.Application;
 import javafx.stage.Stage;
@@ -16,10 +17,8 @@ public class Program extends Application {
 	@Override
 	public void start(Stage primaryStage) throws Exception {
 		Store model = new Store();
-		
+		StoreCommand storeCom = new StoreCommand(model);
 		StoreView view = new StoreView(primaryStage);
-		StoreController controller = new StoreController(model, view);
-
-		
+		StoreController controller = new StoreController(storeCom, view);
 	}
 }

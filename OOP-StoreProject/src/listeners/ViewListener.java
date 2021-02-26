@@ -1,5 +1,9 @@
 package listeners;
 
+import java.util.TreeMap;
+
+import model.Product;
+
 public interface ViewListener {
 	
 	
@@ -9,6 +13,13 @@ public interface ViewListener {
 	
 	public void loadProductToModel(String catalogNumber);
 	
+	public void showProductsToModel();
+	
+	public void removeLastProductAddedToModel();
+	
+	public void showProfitToModel();
+	
+	public void sendMessageToModel(String saleMessage);
 	
 
 	//add functions here
