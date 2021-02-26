@@ -1,4 +1,4 @@
-package model;
+package observ;
 
 import java.util.Observable;
 
