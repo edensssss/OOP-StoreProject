@@ -1,9 +1,10 @@
-/view/
 /command/
 /compare/
 /controller/
+/iterator/
 /listeners/
 /main/
 /memento/
 /model/
 /observ/
+/view/

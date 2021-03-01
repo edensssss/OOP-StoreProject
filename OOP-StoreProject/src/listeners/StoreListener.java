@@ -10,10 +10,10 @@ import model.Product;
 
 public interface StoreListener {
 	
-	
+	void fireIsFileExistToView(Boolean isEmpty);
 	void fireProductToUI(Product product);
 	//void fireCustomersToUI(ArrayList<Customer> customers);
-	void fireAllProductsToUI(TreeMap<String, Product> products);
+	void fireAllProductsToUI(Vector<Product> products);
 	void fireProfitToUI(TreeMap<String, Product> products);
 	void fireMessagesToUI(StringBuffer messages);
 	

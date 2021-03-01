@@ -4,11 +4,11 @@ import java.util.Comparator;
 
 import model.Product;
 
-public class CompareByCatalogNumDESC implements Comparator<Product>{
+public class CompareByCatalogNumDESC implements Comparator<String>{
 	
 	@Override
-	public int compare(Product p1, Product p2) {
-		return p2.getNumber().compareTo(p1.getNumber());
+	public int compare(String s1, String s2) {
+		return s2.compareTo(s1);
 	}
 
 }

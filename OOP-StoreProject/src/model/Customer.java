@@ -1,5 +1,8 @@
 package model;
 
+import java.io.FileNotFoundException;
+import java.io.IOException;
+import java.io.RandomAccessFile;
 import java.io.Serializable;
 import java.util.Observable;
 import java.util.Observer;
@@ -23,6 +26,18 @@ public class Customer implements Observer, Serializable,Receiver{
 		this.name = name;
 		this.phoneNumber = phoneNumber;
 		this.notifications = notifications;
+	}
+
+	public Customer(RandomAccessFile raf) {
+		try {
+			this.name = raf.readUTF();
+			this.phoneNumber = raf.readUTF();
+			this.notifications = raf.readBoolean();
+		} catch (FileNotFoundException e) {
+			System.out.println("DeleteStrFromFileMethodException: File Not Found! " + e.getMessage());
+		} catch (IOException e) {
+			System.out.println("DeleteStrFromFileMethodException: Input Output Exception! " + e.getMessage());
+		}		
 	}
 
 	public String getName() {

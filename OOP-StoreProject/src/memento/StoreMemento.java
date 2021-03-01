@@ -12,7 +12,7 @@ public class StoreMemento {
 	private LocalDate created;
 	
 	public StoreMemento(Store store) {
-		this.products = new TreeMap<String,Product>(store.getProducts());
+		//this.products = new TreeMap<String,Product>(store.getProducts());
 		this.created = LocalDate.now();
 	}
 

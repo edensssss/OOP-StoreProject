@@ -1,6 +1,7 @@
 package command;
 
 import java.util.TreeMap;
+import java.util.Vector;
 
 import model.Product;
 import model.Store;
@@ -28,8 +29,8 @@ public class StoreCommand implements Command {
 	}
 	
 	@Override
-	public TreeMap<String, Product> selectSortToModel(String type) throws Exception {
-		return sortSelection.execute(type);
+	public void selectSortToModel(String type) throws Exception {
+		sortSelection.execute(type);
 	}
 
 	@Override
@@ -43,8 +44,13 @@ public class StoreCommand implements Command {
 		return loadProduct.execute(catalogNumber);
 	}
 	
+//	@Override
+//	public TreeMap<String, Product> showProductsToModel() throws Exception {
+//		return showProducts.execute();
+//	}
+	
 	@Override
-	public TreeMap<String, Product> showProductsToModel() throws Exception {
+	public Vector<Product> showProductsToModel() throws Exception {
 		return showProducts.execute();
 	}
 	

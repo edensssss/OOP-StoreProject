@@ -1,5 +1,8 @@
 package model;
 
+import java.io.FileNotFoundException;
+import java.io.IOException;
+import java.io.RandomAccessFile;
 import java.io.Serializable;
 
 
@@ -20,6 +23,20 @@ public class Product implements Comparable<Product>, Serializable {
 		this.price = price;
 		this.priceOfSale = priceOfSale;
 		this.customer = customer;
+	}
+
+	public Product(RandomAccessFile raf) {
+		try {
+			this.catalogNumber = raf.readUTF();
+			this.name = raf.readUTF();
+			this.price = raf.readInt();
+			this.priceOfSale = raf.readInt();		
+			this.customer = new Customer(raf);
+		} catch (FileNotFoundException e) {
+			System.out.println("DeleteStrFromFileMethodException: File Not Found! " + e.getMessage());
+		} catch (IOException e) {
+			System.out.println("DeleteStrFromFileMethodException: Input Output Exception! " + e.getMessage());
+		}		
 	}
 
 	public Customer getCustomer() {
@@ -69,7 +86,7 @@ public class Product implements Comparable<Product>, Serializable {
 
 	@Override
 	public String toString() {
-		return "Name: " + name + "\nCatalog num: " + catalogNumber + "\nPrice: " + price + "\tPrice sale: " + priceOfSale + "\n" + customer.toString();
+		return "Name: " + name + "\nCatalog num: " + catalogNumber + "\nPrice: " + price + "         Price sale: " + priceOfSale + "\n" + customer.toString();
 	}
 
 	@Override

@@ -1,91 +1,86 @@
 package model;
 
-import java.io.BufferedInputStream;
-import java.io.BufferedOutputStream;
-import java.io.DataInputStream;
-import java.io.DataOutputStream;
 import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.io.ObjectInputStream;
-import java.io.ObjectOutputStream;
-import java.io.RandomAccessFile;
 import java.io.Serializable;
-import java.util.Collections;
-import java.util.Comparator;
-import java.util.Iterator;
 import java.util.Map;
 import java.util.TreeMap;
 import java.util.Vector;
 
+import compare.CompareByCatalogNumDESC;
+import compare.CompareByInsertionOrder;
+import iterator.FileIterator;
 import listeners.StoreListener;
 import memento.CareTaker;
 import memento.StoreMemento;
-import observ.Receiver;
 import observ.SaleMessage;
 import observ.Sender;
-import view.StoreView;
 
-public class Store implements StoreFunc, Serializable, Sender {
+public class Store implements Serializable, Sender {
 
 	private static Vector<StoreListener> allListeners = new Vector<StoreListener>();
-	private TreeMap<String, Product> products = new TreeMap<String, Product>();
+	private TreeMap<String, Product> products;
 	private CareTaker ct = new CareTaker();
+	//private Comparator<Product> comparator;
+	private String compareType;
+	private boolean isFileEmpty;
 
 	private static final long serialVersionUID = 1L;
 	public static final String F_NAME = "products.txt";
-	private File objectFile;
+	private File binFile = new File(F_NAME);
 
-	public Store() {
-		super();
-		initFile();
-	}
+	private FileIterator fi = new FileIterator(F_NAME);
 
-	// create data structure: TreeMap
-	ObjectOutputStream oOut;
-	ObjectInputStream oIn;
-	private boolean isAppendableObject;
-
-	// init file
-	private void initFile() {
-
-		initAppandable();
-		initObjectStream();
-
-	}
-
-	// init appandable
-	private void initAppandable() {
-		objectFile = new File(F_NAME);
-		isAppendableObject = objectFile.exists();
-	}
-
-	// init Object stream
-	private void initObjectStream() {
-		resetOutputStream();
-		resetInputStream();
-	}
-
-	// reset OutputStream
-	private void resetOutputStream() {
-		try {
-			if (isAppendableObject) {
-				oOut = new ObjectOutputStream(new FileOutputStream(objectFile, isAppendableObject)) {
-					@Override
-					protected void writeStreamHeader() throws IOException {
-						return;
-					}
-				};
-			} else
-				oOut = new ObjectOutputStream(new FileOutputStream(objectFile, isAppendableObject));
-		} catch (FileNotFoundException e) {
-			System.out.println("resetOutputStream method Exception: " + e.getMessage());
-		} catch (IOException e) {
-			System.out.println("resetOutputStream method Exception: " + e.getMessage());
+	public Store() throws Exception {
+		if(binFile.length() != 0)
+			isFileEmpty = false;
+		else
+			isFileEmpty = true;
+		
+		for (StoreListener l : allListeners)
+			l.fireIsFileExistToView(isFileEmpty);	
+		
+		if (!isFileEmpty)
+		{
+			createSortedProducts(fi.readSortTypeFromFile());
+			readProductsFromFile();
 		}
+			
 	}
+
+	public void setComparator(Object o) {
+		setComparator(o);
+	}
+
+//	public Comparator<Product> getComparator() {
+//		return comparator;
+//	}
+
+	public void createSortedProducts(String type) {
+		
+		switch (type) {
+		case "Descending":
+			products = new TreeMap<String, Product>(new CompareByCatalogNumDESC());
+			setCompareType("Descending");
+			break;
+		case "Insertion":
+			products = new TreeMap<String, Product>(new CompareByInsertionOrder());
+			setCompareType("Insertion");
+			break;
+		default:
+			products = new TreeMap<String, Product>();
+			setCompareType("Ascending");
+			break;
+		}
+		
+		if (binFile.length() == 0)
+			fi.writeSortTypeToFile(getCompareType());
+	}
+	
+	
+	
+	
+	
+	
 
 	public void addProductToStore(String name, String catalogNumber, int price, int priceOfSale, String customerName,
 			String phoneNumber, boolean notifications) throws Exception {
@@ -95,8 +90,28 @@ public class Store implements StoreFunc, Serializable, Sender {
 		Product product = new Product(name, catalogNumber, price, priceOfSale, temp);
 
 		products.put(catalogNumber, product);
-		saveProductsToFile();
+		writeProductToFile(product);
 	}
+	
+	public void addProductFromFileToStore(String name, String catalogNumber, int price, int priceOfSale, String customerName,
+			String phoneNumber, boolean notifications) throws Exception {
+
+		ct.save(new StoreMemento(this));
+		Customer temp = new Customer(customerName, phoneNumber, notifications);
+		Product product = new Product(name, catalogNumber, price, priceOfSale, temp);
+
+		products.put(catalogNumber, product);
+		
+		//writeProductToFile(product);
+	}
+	
+	
+	
+	
+	
+	
+	
+	
 
 	public Product getProduct(String catalogNumber) {
 
@@ -105,112 +120,10 @@ public class Store implements StoreFunc, Serializable, Sender {
 		else
 			return null;
 	}
-	
+
 	public void removeLastProductAdded() {
 		load(ct.load());
-		saveProductsToFile();
-	}
-	
-	public TreeMap<String, Product> getProducts() {
-		return products;
-	}
-	
-	public StoreMemento save() {
-		return new StoreMemento(this);
-	}
-	
-	public void load(StoreMemento sm) {
-		products = sm.getProducts();
-	}
-
-	// save Object To File
-	private boolean saveProductsToFile() {
-		try {
-			oOut.writeInt(products.size());
-			for (Map.Entry<String, Product> entry : products.entrySet()) {
-				oOut.writeObject(entry.getValue());
-			}
-
-			return true;
-
-		} catch (IOException e) {
-			return false;
-		} catch (Exception e) {
-			return false;
-		}
-	}
-
-	// load Product From File
-	private void loadProductFromFile() {
-		try {
-			if (oIn.available() == 0)
-				resetInputStream();
-
-			if (oIn.available() != 0) {
-				int n = oIn.readInt();
-				Product product = (Product) oIn.readObject();
-				products.put(product.getNumber(), product);
-			}
-		} catch (IOException e) {
-			e.printStackTrace();
-		} catch (Exception e) {
-			e.printStackTrace();
-		}
-	}
-
-	// reset InputStream
-	private void resetInputStream() {
-		try {
-			oIn = new ObjectInputStream(new FileInputStream(objectFile));
-		} catch (FileNotFoundException e) {
-			System.out.println("resetInputStream Method Exception: " + e.getMessage());
-		} catch (IOException e) {
-			System.out.println("resetInputStream Method Exception: " + e.getMessage());
-		}
-	}
-
-
-	// applying
-	public void notifySale() {
-
-		SaleMessage sale = new SaleMessage("sale");
-
-		for (Map.Entry<String, Product> entry : products.entrySet()) {
-			if (entry.getValue().getCustomer().getNotifications())
-				sale.addObserver(entry.getValue().getCustomer());
-		}
-	}
-
-	/*
-	 * public void sort() { Comparator<Product> comparator = new
-	 * CompareByCatalogNum();
-	 * 
-	 * }
-	 */
-
-	@Override
-	public Iterator<Product> iterator() {
-		return new MyIterator();
-	}
-
-	public class MyIterator implements Iterator<Product> {
-		private int index = 0;
-
-		@Override
-		public boolean hasNext() {
-			return index < products.size();
-		}
-
-		@Override
-		public Product next() {
-			if (hasNext())
-				return products.get(index++);
-			return null;
-		}
-	}
-
-	public void registerListeners(StoreListener newListener) {
-		allListeners.add(newListener);
+		//fi.removeLastProduct();
 	}
 
 	@Override
@@ -220,48 +133,77 @@ public class Store implements StoreFunc, Serializable, Sender {
 			if (entry.getValue().getCustomer().getNotifications())
 				msg.append(entry.getValue().getCustomer().receiveMessage(this, saleMsg));
 		}
-		
 		return msg.toString();
 	}
-	
+
 	public String sendMsgToCustomers(String msg) {
 		SaleMessage saleMsg = new SaleMessage(msg);
 		return sendMessage(saleMsg);
 	}
+
+	public TreeMap<String, Product> getProducts() {
+		//System.out.println(products);
+		return products;
+	}
 	
-	public void readProductsFromFile(File binFile) {
-		{
-			int readPointer = 0;
-			
-			//String find = txtFldFind.getText(), replaceWith = txtFldReplaceWith.getText();
-			try (RandomAccessFile raf = new RandomAccessFile(binFile, "r")) {
-				byte[] data = new byte[1];
-				while (raf.read(data) != -1) {
-					String readText = new String(data);
-//					if (find.equals(readText)) {
-//						byte[] temp = new byte[(int) (raf.length() - readPointer + find.length())];
-//						raf.read(temp);
-//						raf.setLength(readPointer);
-//						raf.write(replaceWith.getBytes());
-//						raf.write(temp);
-//						isFound = true;
-//					} else {
-//						raf.seek(readPointer++);
-//					}
-					raf.seek(readPointer);
-				}
-				raf.setLength(readPointer);
+	public Vector<Product> getProductsToVector() {
+		Vector<Product> productsVector = new Vector<Product>();
+		for (Map.Entry<String, Product> entry : products.entrySet())
+			productsVector.add(entry.getValue());
+		
+		//System.out.println(productsVector);
+		return productsVector;		
+	}
 
-			} catch (FileNotFoundException e) {
-				System.out.println("DeleteStrFromFileMethodException: File Not Found! " + e.getMessage());
-			} catch (IOException e) {
-				System.out.println("DeleteStrFromFileMethodException: Input Output Exception! " + e.getMessage());
+	public StoreMemento save() {
+		return new StoreMemento(this);
+	}
+
+	public void load(StoreMemento sm) {
+		products = sm.getProducts();
+	}
+
+	public void registerListeners(StoreListener newListener) {
+		allListeners.add(newListener);
+	}
+
+	public void writeProductToFile(Product product) {
+		// for (Map.Entry<String, Product> entry : products.entrySet())
+		// fi.writeToFile(entry.getValue());
+		fi.writeToFile(product);
+	}
+
+	public void readProductsFromFile() throws Exception {
+		KeyValueProduct kv;
+		kv = new KeyValueProduct((KeyValueProduct) fi.next());
+		
+		while (kv.getKey() != null) {
+			addProductFromFileToStore(kv.getValue().getName(), kv.getKey(), kv.getValue().getPrice(),
+					kv.getValue().getPriceOfSale(), kv.getValue().getCustomer().getName(),
+					kv.getValue().getCustomer().getPhoneNumber(), kv.getValue().getCustomer().getNotifications());
+			if(fi.hasNext()) {
+				kv = new KeyValueProduct((KeyValueProduct) fi.next());
 			}
-
+			else {
+				break;
+			}
+				
 		}
+	}
 
-}
+	public String getCompareType() {
+		return compareType;
+	}
 
-
+	public void setCompareType(String compareType) {
+		this.compareType = compareType;
+	}
+	
+	public File getFile() {
+		return binFile;
+	}
+	
+	
+	
 
 }

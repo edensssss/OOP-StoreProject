@@ -2,6 +2,7 @@ package controller;
 
 import java.util.Map;
 import java.util.TreeMap;
+import java.util.Vector;
 
 import command.StoreCommand;
 import listeners.StoreListener;
@@ -90,7 +91,8 @@ public class StoreController implements StoreListener, ViewListener {
 			msg.append(storeCom.sendMessageToModel(saleMessage));
 			if(msg.length() == 0)
 				view.getLblException().setText("No one wants to get notifications");
-			fireMessagesToUI(msg);
+			else
+				fireMessagesToUI(msg);
 		} catch (Exception e) {
 			view.getLblException().setText(e.getMessage());
 		}
@@ -133,7 +135,7 @@ public class StoreController implements StoreListener, ViewListener {
 	}
 	
 	@Override
-	public void fireAllProductsToUI(TreeMap<String, Product> products) {
+	public void fireAllProductsToUI(Vector<Product> products) {
 		view.getLblException().setVisible(true);
 		
 		if(products.size()==0)
@@ -141,8 +143,10 @@ public class StoreController implements StoreListener, ViewListener {
 			
 		else {
 			view.setLblException("All products:");
-			for (Map.Entry<String, Product> entry : products.entrySet())
-				view.setLblException(view.getLblException().getText() + "\n" + entry.getValue().toString()); 
+			for (int i = 0; i < products.size(); i++)
+				view.setLblException(view.getLblException().getText() + "\n" + products.elementAt(i).toString());
+//			for (Map.Entry<String, Product> entry : products.entrySet())
+//				view.setLblException(view.getLblException().getText() + "\n" + entry.getValue().toString()); 
 		}
 		
 	}
@@ -171,20 +175,29 @@ public class StoreController implements StoreListener, ViewListener {
 	@Override
 	public void fireMessagesToUI(StringBuffer messages) {
 		view.getLblException().setVisible(true);
-		view.getLblException().setText(messages.toString());
+		//view.getLblException().setText(messages.toString());
 		
 		String saleMsg = messages.toString();
 		String[] allMessages = saleMsg.split("\n");
 		int numOfCustormers = allMessages.length;
-		view.createLblCustomers(numOfCustormers);
+		//view.createLblCustomers(numOfCustormers);
+		//view.setLblException("Sending messages: ");
 		
 		for (int i = 0; i < numOfCustormers; i++) {
-			view.createNewMsg(i, allMessages[i]);
-			view.getLblCustomers()[i].setVisible(false);
+			view.createNewMsg(allMessages[i]);
+			//view.getLblCustomers()[i].setVisible(false);
+			view.getCustomers().elementAt(i).setVisible(false);
 			// need to add "vbox" and add children label[i]
-			view.getScrollBar().setContent(view.getLblCustomers()[i]);
+			//view.setLblException(view.getLblException().getText() +"\n"+ view.getCustomers().elementAt(i));
+			view.getAllMessages().getChildren().add(view.getCustomers().elementAt(i));
+			//view.getScrollBar().setContent(view.getCustomers().elementAt(i));
 		}
 	
+	}
+
+	@Override
+	public void fireIsFileExistToView(Boolean isEmpty) {
+		view.setIsFileEmpty(isEmpty);	
 	}
 
 

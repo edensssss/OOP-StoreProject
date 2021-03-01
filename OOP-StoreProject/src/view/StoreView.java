@@ -1,5 +1,6 @@
 package view;
 
+import java.io.File;
 import java.util.Vector;
 
 import javafx.application.Application;
@@ -10,7 +11,6 @@ import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.scene.Scene;
 import javafx.scene.control.Button;
-import javafx.scene.control.ButtonBase;
 import javafx.scene.control.CheckBox;
 import javafx.scene.control.Label;
 import javafx.scene.control.RadioButton;
@@ -18,7 +18,6 @@ import javafx.scene.control.ScrollPane;
 import javafx.scene.control.TextField;
 import javafx.scene.control.TextFormatter;
 import javafx.scene.control.ToggleGroup;
-import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.GridPane;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.Pane;
@@ -34,18 +33,22 @@ import listeners.ViewListener;
 public class StoreView extends Application {
 
 	private static Vector<ViewListener> allListeners = new Vector<ViewListener>();
+	
+	boolean selectionByUser = true;
+	private File binFile = new File("products.txt");
 
-	Boolean selectionByUser = true;
+	// declare scene
+	Scene firstScene;
+	Scene secondScene;
 
 	// main pane: VBox
 	StackPane stackPane = new StackPane();
 	VBox mainPane = new VBox();
-//	VBox selectSort = new VBox();
 
 	// headlines texts nodes
-	Text text = new Text("Welcome to the store");
-	Text customerDetails = new Text("Customer datails: ");
-	Text productDetails = new Text("Product datails: ");
+	Text title = new Text("Welcome to the store");
+	Text customerDetails = new Text("    Customer datails: ");
+	Text productDetails = new Text("    Product datails: ");
 	Text storeStatus = new Text("Store status: ");
 	Text status = new Text("");
 	Text selection = new Text("Please select sort type");
@@ -53,14 +56,20 @@ public class StoreView extends Application {
 	// products nodes
 	Label labelProductName = new Label("Product name:                  ");
 	Label labelProductNumber = new Label("Product number:              ");
-	Label priceOfProduct = new Label("Product's price:                ");
+	Label priceOfProduct = new Label("Product's price:                 ");
 	Label priceOfProductSale = new Label("Product's price of sale:     ");
-	Label labelMessege = new Label("Enter messege here: ");
-
+	Label labelMessege = new Label("Enter messege: ");
+	Label lblMust = new Label("*");
+	
 	// customer nodes
 	Label customerName = new Label("Customer name:               ");
 	Label customerPhoneNumber = new Label("Customer phone-number:");
 	CheckBox checkBox = new CheckBox("Get notifications");
+
+	// create gridPanes
+	GridPane gridPaneProduct = new GridPane();
+	GridPane gridPaneCustomer = new GridPane();
+	GridPane gridPaneButtons = new GridPane();
 
 	// text fields
 	static TextField tfProductName = new TextField();
@@ -72,6 +81,7 @@ public class StoreView extends Application {
 	static TextField tfMessege = new TextField();
 
 	// scroll bar for output
+	VBox allMessages = new VBox();
 	ScrollPane scrollBar = new ScrollPane();
 
 	// Radio buttons
@@ -80,85 +90,156 @@ public class StoreView extends Application {
 	RadioButton rbDESC = new RadioButton("Descending");
 	RadioButton rbInsert = new RadioButton("Insertion");
 
-	Pane messegePane = new HBox(40);
+	// panes
+	Pane messegePane = new HBox(20);
 	Pane hBPane = new HBox(40);
-	Pane textFieldsPane = new VBox(20);
-	Pane rbPane = new VBox(40);
-	Pane productNamePane = new HBox(20);
-	Pane productNumberPane = new HBox(20);
-	Pane productPricePane = new HBox(20);
-	Pane productPriceOfSalePane = new HBox(20);
+	Pane textFieldsPane = new VBox(15);
+	Pane rbPane = new VBox(30);
 	Pane productDetailsPane = new VBox(20);
-	Pane customerNamePane = new HBox(20);
-	Pane customerPhoneNumberPane = new HBox(20);
 	Pane customerDetailsPane = new VBox(20);
-	Pane buttonsPane = new HBox(20);
 	Pane userPane = new HBox(20);
 	Pane rightPane = new VBox(20);
 
+	// Buttons
 	Button btnInsertProduct = new Button("Insert New Product");
 	Button btnShowProductInfoByNumber = new Button("Search Product");
 	Button btnShowAllProducts = new Button("Show All Products");
 	Button btnRemoveLastProductAdded = new Button("Remove Last Product");
+	Button btnRemoveByProductNumber = new Button("Remove By P-Number");
+	Button btnRemoveAllProducts = new Button("Remove all products");
 	Button btnShowProfit = new Button("Show profit");
 	Button btnSendMessage = new Button("Send Message");
 	Button btnSubmitSort = new Button("Submit");
 
 	// label for exeptions
 	Label lblException = new Label();
-
-	private Stage primaryStage;
+	Vector<Label> customers = new Vector<Label>();
 
 	public StoreView(Stage primaryStage) {
 
-		// creating tgl group for RBs
+		/* creating tgl group for RBs */
 		rbASC.setToggleGroup(tglSort);
 		rbDESC.setToggleGroup(tglSort);
 		rbInsert.setToggleGroup(tglSort);
 
-		// scroll bar
+		/* scroll bar */
 		scrollBar.setContent(lblException);
-		scrollBar.setPrefSize(400, 350);
+		scrollBar.setPrefSize(400, 330);
 
-		activateStartingScreen();
-		productNamePane.getChildren().addAll(labelProductName, tfProductName);
-		productNumberPane.getChildren().addAll(labelProductNumber, tfProductNumber);
-		productDetailsPane.getChildren().addAll(productDetails, productNamePane, productNumberPane, productPricePane,
-				productPriceOfSalePane);
-		productPricePane.getChildren().addAll(priceOfProduct, tfPriceOfProduct);
-		productPriceOfSalePane.getChildren().addAll(priceOfProductSale, tfPriceOfProductSale);
+		/* panes getChilden() */
+		productDetailsPane.getChildren().addAll(productDetails);
 		rbPane.getChildren().addAll(selection, rbASC, rbDESC, rbInsert, btnSubmitSort);
 		userPane.getChildren().addAll(scrollBar, messegePane);
-		messegePane.getChildren().addAll(labelMessege, tfMessege);
+		messegePane.getChildren().addAll(labelMessege, tfMessege, btnSendMessage);
 		rightPane.getChildren().addAll(userPane, messegePane);
-		buttonsPane.getChildren().addAll(btnInsertProduct, btnShowProductInfoByNumber, btnShowAllProducts,
-				btnRemoveLastProductAdded, btnShowProfit, btnSendMessage);
-		customerNamePane.getChildren().addAll(customerName, tfCustomerName);
-		customerPhoneNumberPane.getChildren().addAll(customerPhoneNumber, tfCustomerPhoneNumber);
-		customerDetailsPane.getChildren().addAll(customerNamePane, customerPhoneNumberPane, checkBox);
+
+		/* product's gridPane */
+		gridPaneProduct.add(labelProductName, 1, 0); // column=1 row=0
+		gridPaneProduct.add(tfProductName, 2, 0); // column=2 row=0
+		gridPaneProduct.add(labelProductNumber, 1, 1);
+		gridPaneProduct.add(tfProductNumber, 2, 1);
+		gridPaneProduct.add(lblMust, 3, 1);	// adding *
+		gridPaneProduct.add(priceOfProduct, 1, 2);
+		gridPaneProduct.add(tfPriceOfProduct, 2, 2);
+		gridPaneProduct.add(priceOfProductSale, 1, 3);
+		gridPaneProduct.add(tfPriceOfProductSale, 2, 3);
+		productDetailsPane.getChildren().add(gridPaneProduct);
+
+		/* customer's gridPane */
+		gridPaneCustomer.add(customerName, 1, 0); // column=1 row=0
+		gridPaneCustomer.add(tfCustomerName, 2, 0); // column=2 row=0
+		gridPaneCustomer.add(customerPhoneNumber, 1, 1);
+		gridPaneCustomer.add(tfCustomerPhoneNumber, 2, 1);
+		gridPaneCustomer.add(checkBox, 1, 2);
+		customerDetailsPane.getChildren().add(gridPaneCustomer);
+
+		/* Buttons gridPane */
+		gridPaneButtons.add(btnInsertProduct, 1, 0); // column=1 row=0
+		gridPaneButtons.add(btnShowProductInfoByNumber, 2, 0); // column=2 row=0
+		gridPaneButtons.add(btnShowAllProducts, 3, 0);
+		gridPaneButtons.add(btnShowProfit, 4, 0);
+		gridPaneButtons.add(btnRemoveLastProductAdded, 1, 1);
+		gridPaneButtons.add(btnRemoveByProductNumber, 2, 1);
+		gridPaneButtons.add(btnRemoveAllProducts, 3, 1);
+
+		/* design gridPanes */
+		gridPaneProduct.setHgap(10); // horizontal gap in pixels => that's what you are asking for
+		gridPaneProduct.setVgap(10); // vertical gap in pixels
+		gridPaneProduct.setPadding(new Insets(10, 10, 10, 10)); // margins around the whole grid
+
+		gridPaneCustomer.setHgap(10);
+		gridPaneCustomer.setVgap(10);
+		gridPaneCustomer.setPadding(new Insets(10, 10, 10, 10));
+
+		gridPaneButtons.setHgap(10);
+		gridPaneButtons.setVgap(10);
+		gridPaneButtons.setPadding(new Insets(10, 10, 10, 10));
+		gridPaneButtons.setHgap(30);
+		gridPaneButtons.setAlignment(Pos.CENTER);
+
+		/* buttons design */
+		btnInsertProduct.setMinWidth(150);
+		btnShowProductInfoByNumber.setMinWidth(150);
+		btnShowAllProducts.setMinWidth(150);
+		btnRemoveLastProductAdded.setMinWidth(150);
+		btnShowProfit.setMinWidth(150);
+		btnSendMessage.setMinWidth(100);
+		btnRemoveAllProducts.setMinWidth(150);
+		btnRemoveByProductNumber.setMinWidth(150);
 
 		/* design rbPane */
-		selection.setStyle("-fx-font: 16 Allan;");
+		selection.setStyle("-fx-font: 20 Ariel;");
+		btnSubmitSort.setMinWidth(140);
+		btnSubmitSort.setStyle("-fx-font-size:14");
+		rbPane.setStyle("-fx-border-width: .25px; -fx-padding: 220 200 300 330;");
+		rbASC.setScaleX(1.2);
+		rbASC.setScaleY(1.2);
+		rbDESC.setScaleX(1.2);
+		rbDESC.setScaleY(1.2);
+		rbInsert.setScaleX(1.2);
+		rbInsert.setScaleY(1.2);
 
-		/* design headline */
-		text.setFill(Color.ROYALBLUE);
-		text.setStroke(Color.BLACK);
-		text.setStyle("-fx-font: 40 Allan;");
+		/* design labels */
+		lblMust.setTextFill(Color.RED);
+
+		/* design headline (title) */
+		title.setFill(Color.SILVER);
+		title.setStroke(Color.BLACK);
+		title.setFont(Font.font("Verdana", FontWeight.BOLD, 40));
 
 		/* design user massages pane */
-//		userPane.setStyle("-fx-border-color: black");
-		// userPane.setMinHeight(350);
-		// userPane.setMinWidth(400);
-		status.setFont(Font.font("Verdana", FontWeight.BOLD, 12));
+		status.setFont(Font.font("Verdana", FontWeight.BOLD, 14));
+		lblException.setPadding(new Insets(10));
 
-		/* design buttonsPane */
+		/* design buttons and buttonsPane */
 		btnInsertProduct.setTextFill(Color.BLACK);
 		btnShowProductInfoByNumber.setTextFill(Color.BLACK);
 		btnShowAllProducts.setTextFill(Color.BLACK);
 		btnRemoveLastProductAdded.setTextFill(Color.BLACK);
 		btnShowProfit.setTextFill(Color.BLACK);
 		btnSendMessage.setTextFill(Color.BLACK);
-		buttonsPane.setPadding(new Insets(25));
+		btnRemoveAllProducts.setTextFill(Color.BLACK);
+
+		btnSendMessage.setStyle("-fx-text-fill: rgb(33, 33, 33);\r\n" + "    -fx-border-color: rgb(33, 33, 33);\r\n"
+				+ "    -fx-border-radius: 4;\r\n" + "    -fx-padding: 3 6 6 6;");
+		btnRemoveByProductNumber
+				.setStyle("-fx-text-fill: rgb(33, 33, 33);\r\n" + "    -fx-border-color: rgb(33, 33, 33);\r\n"
+						+ "    -fx-border-radius: 4;\r\n" + "    -fx-padding: 7 6 6 6;");
+		btnInsertProduct.setStyle("-fx-text-fill: rgb(33, 33, 33);\r\n" + "    -fx-border-color: rgb(33, 33, 33);\r\n"
+				+ "    -fx-border-radius: 4;\r\n" + "    -fx-padding: 7 6 6 6;");
+		btnShowProductInfoByNumber
+				.setStyle("-fx-text-fill: rgb(33, 33, 33);\r\n" + "    -fx-border-color: rgb(33, 33, 33);\r\n"
+						+ "    -fx-border-radius: 4;\r\n" + "    -fx-padding: 7 6 6 6;");
+		btnShowAllProducts.setStyle("-fx-text-fill: rgb(33, 33, 33);\r\n" + "    -fx-border-color: rgb(33, 33, 33);\r\n"
+				+ "    -fx-border-radius: 4;\r\n" + "    -fx-padding: 7 6 6 6;");
+		btnRemoveLastProductAdded
+				.setStyle("-fx-text-fill: rgb(33, 33, 33);\r\n" + "    -fx-border-color: rgb(33, 33, 33);\r\n"
+						+ "    -fx-border-radius: 4;\r\n" + "    -fx-padding: 7 6 6 6;");
+		btnShowProfit.setStyle("-fx-text-fill: rgb(33, 33, 33);\r\n" + "    -fx-border-color: rgb(33, 33, 33);\r\n"
+				+ "    -fx-border-radius: 4;\r\n" + "    -fx-padding: 7 6 6 6;");
+		btnRemoveAllProducts
+				.setStyle("-fx-text-fill: rgb(33, 33, 33);\r\n" + "    -fx-border-color: rgb(33, 33, 33);\r\n"
+						+ "    -fx-border-radius: 4;\r\n" + "    -fx-padding: 7 6 6 6;");
 
 		/* design headline of customerDetails & productDetails */
 		productDetails.setFill(Color.BLACK);
@@ -169,7 +250,7 @@ public class StoreView extends Application {
 		storeStatus.setStyle("-fx-font: 20 Allan;");
 
 		/* add all nodes to pane */
-		mainPane.getChildren().addAll(text, hBPane, buttonsPane);
+		mainPane.getChildren().addAll(title, hBPane, gridPaneButtons);
 		hBPane.getChildren().addAll(textFieldsPane, rightPane);
 		textFieldsPane.getChildren().addAll(productDetails, productDetailsPane, customerDetails, customerDetailsPane);
 
@@ -215,11 +296,9 @@ public class StoreView extends Application {
 				for (ViewListener l : allListeners) {
 					l.selectionSortToModel(sort);
 				}
-				
+
 				stackPane.getChildren().addAll(mainPane);
 				rbPane.setVisible(false);
-				
-
 			}
 		});
 
@@ -231,15 +310,21 @@ public class StoreView extends Application {
 				// get TextFields
 				String name = tfProductName.getText();
 				String catalogProduct = tfProductNumber.getText();
-				int price = Integer.parseInt(getTfPriceOfProduct().getText());
-				int priceOfSale = Integer.parseInt(getTfPriceOfProductSale().getText());
+				int price,priceOfSale;
+				if(getTfPriceOfProduct().getText().isEmpty())
+					price = 0;
+				else
+					price = Integer.parseInt(getTfPriceOfProduct().getText());
+				if(getTfPriceOfProductSale().getText().isEmpty())
+					priceOfSale = 0;
+				else
+					priceOfSale = Integer.parseInt(getTfPriceOfProductSale().getText());
 
 				String customerName = tfCustomerName.getText();
 				String phoneNumber = getTfCustomerPhoneNumber().getText();
 				boolean notifications = checkBox.isSelected();
 
 				if (!tfProductNumber.getText().isEmpty()) {
-					lblException.setVisible(false);
 					for (ViewListener l : allListeners) {
 						l.addProductToModel(name, catalogProduct, price, priceOfSale, customerName, phoneNumber,
 								notifications);
@@ -253,6 +338,9 @@ public class StoreView extends Application {
 					tfCustomerName.clear();
 					tfCustomerPhoneNumber.clear();
 					checkBox.setSelected(false);
+					
+					lblException.setVisible(true);
+					lblException.setText("Product has been successfully added");
 				} else {
 					lblException.setText("Product number can't be empty");
 					lblException.setVisible(true);
@@ -316,50 +404,91 @@ public class StoreView extends Application {
 		btnSendMessage.setOnAction(new EventHandler<ActionEvent>() {
 			@Override
 			public void handle(ActionEvent event) {
-
-				for (ViewListener l : allListeners) {
-					l.sendMessageToModel(tfMessege.getText());
-				}
-
-				Label customers[] = getLblCustomers();
-				System.out.println(customers);
-				Thread tr = new Thread(() -> {
-					try {
-						for (Label l : customers) {
-							Thread.sleep(2000);
-							Platform.runLater(() -> {
-								l.setVisible(true);
-							});
-						}
-					} catch (Exception e) {
+				String msg = tfMessege.getText();
+				
+				if(msg.length() != 0) {
+					for (ViewListener l : allListeners) {
+						l.sendMessageToModel(msg);
 					}
-				});
-				tr.start();
+					tfMessege.clear();
+					scrollBar.setContent(allMessages);
+					
+					Thread tr = new Thread(() -> {
+						try {
+							for (Label l : customers) {
+								Thread.sleep(2000);
+								Platform.runLater(() -> {
+									l.setVisible(true);
+								});
+							}
+							Thread.sleep(3500);
+							Platform.runLater(() -> {
+								setLblException("");
+								scrollBar.setContent(lblException);
+							});
+							
+						} catch (Exception e) {}
+					});
+					tr.start();
+					
+				}
+				else {
+					lblException.setVisible(true);
+					lblException.setText("Message can not be empty");
+				}
+				
 			}
 		});
+			
+		if (isFileEmpty()) {
+			stackPane.getChildren().addAll(rbPane);
+			Scene mainScene = new Scene(stackPane, 830, 600);
+			this.firstScene = mainScene;
+			rbPane.setPadding(new Insets(200));
+			primaryStage.setScene(firstScene);
 
-		Scene scene = new Scene(stackPane, 830, 650);
-		 
-		primaryStage.setScene(scene);
+			// activateStartingScreen();
+		} else {
+			// activateMainScreen();
+			stackPane.getChildren().addAll(mainPane);
+			Scene mainScene = new Scene(stackPane);
+			this.secondScene = mainScene;
+			primaryStage.setScene(secondScene);
+
+		}
 		primaryStage.centerOnScreen();
 		primaryStage.setResizable(false);
 		primaryStage.alwaysOnTopProperty();
 		primaryStage.setTitle("DisplayMovingMessage");
 		primaryStage.show();
 
+		/*
+		 * Scene mainScene = new Scene(stackPane, 830, 600); this.secendScene =
+		 * mainScene;
+		 * 
+		 * primaryStage.setScene(secendScene); primaryStage.centerOnScreen();
+		 * primaryStage.setResizable(false); primaryStage.alwaysOnTopProperty();
+		 * primaryStage.setTitle("DisplayMovingMessage"); primaryStage.show();
+		 */
+
+	}
+
+	private void activateMainScreen() {
+		stackPane.getChildren().addAll(mainPane);
 	}
 
 	private void activateStartingScreen() {
 
+		rbPane.setPadding(new Insets(170));
 		stackPane.getChildren().addAll(rbPane);
-		rbPane.setPadding(new Insets(100));
-		// getting selection and activate the main screen by:
-	//	 stackPane.getChildren().addAll(mainPane);
-
+	}
+	
+	public boolean isFileEmpty() {
+		if(binFile.length() != 0)
+			return false;
+		else return true;
 	}
 
-	
-	
 	public ScrollPane getScrollBar() {
 		return scrollBar;
 	}
@@ -368,31 +497,16 @@ public class StoreView extends Application {
 		this.scrollBar = scrollBar;
 	}
 
-	public void createLblCustomers(int num) {
-		Label lblCustomerMsg[] = new Label[num];
+	public VBox getAllMessages() {
+		return allMessages;
 	}
 
-	public Label[] getLblCustomers() {
-		return getLblCustomers();
+	public Vector<Label> getCustomers() {
+		return customers;
 	}
 
-	public void createNewMsg(int index, String msg) {
-		getLblCustomers()[index] = new Label(msg);
-	}
-
-	private ButtonBase btnInsertProduct() {
-		// TODO Auto-generated method stub
-		return null;
-	}
-
-	private ButtonBase btnShowProductInfoByNumber() {
-		// TODO Auto-generated method stub
-		return null;
-	}
-
-	private ButtonBase btnShowAllProducts() {
-		// TODO Auto-generated method stub
-		return null;
+	public void createNewMsg(String msg) {
+		customers.add(new Label(msg));
 	}
 
 	public Text getStoreStatus() {
@@ -420,11 +534,11 @@ public class StoreView extends Application {
 	}
 
 	public Text getText() {
-		return text;
+		return title;
 	}
 
 	public void setText(Text text) {
-		this.text = text;
+		this.title = text;
 	}
 
 	public Text getCustomerDetails() {
@@ -495,7 +609,7 @@ public class StoreView extends Application {
 		return checkBox;
 	}
 
-	public void setCheckBox(Boolean booleanNotifications) {
+	public void setCheckBox(boolean booleanNotifications) {
 		this.checkBox.setSelected(booleanNotifications);
 	}
 
@@ -556,44 +670,12 @@ public class StoreView extends Application {
 		this.tfCustomerPhoneNumber.setText(phoneNumber);
 	}
 
-	public Pane getProductNamePane() {
-		return productNamePane;
-	}
-
-	public void setProductNamePane(Pane productNamePane) {
-		this.productNamePane = productNamePane;
-	}
-
-	public Pane getProductNumberPane() {
-		return productNumberPane;
-	}
-
-	public void setProductNumberPane(Pane productNumberPane) {
-		this.productNumberPane = productNumberPane;
-	}
-
 	public Pane getPricesPane() {
 		return customerDetailsPane;
 	}
 
 	public void setPricesPane(Pane pricesPane) {
 		this.customerDetailsPane = pricesPane;
-	}
-
-	public Pane getCustomerNamePane() {
-		return customerNamePane;
-	}
-
-	public void setCustomerNamePane(Pane customerNamePane) {
-		this.customerNamePane = customerNamePane;
-	}
-
-	public Pane getCustomerPhoneNumberPane() {
-		return customerPhoneNumberPane;
-	}
-
-	public void setCustomerPhoneNumberPane(Pane customerPhoneNumberPane) {
-		this.customerPhoneNumberPane = customerPhoneNumberPane;
 	}
 
 	public Pane getCustomerDetailsPane() {
@@ -604,20 +686,20 @@ public class StoreView extends Application {
 		this.customerDetailsPane = customerDetailsPane;
 	}
 
-	public Pane getButtonsPane() {
-		return buttonsPane;
-	}
-
-	public void setButtonsPane(Pane buttonsPane) {
-		this.buttonsPane = buttonsPane;
-	}
-
 	public Button getBtnInsertProduct() {
 		return btnInsertProduct;
 	}
 
 	public void setBtnInsertProduct(Button btnInsertProduct) {
 		this.btnInsertProduct = btnInsertProduct;
+	}
+
+	public Button getBtnRemoveAllProducts() {
+		return btnRemoveAllProducts;
+	}
+
+	public void setBtnRemoveAllProducts(Button btnRemoveAllProducts) {
+		this.btnRemoveAllProducts = btnRemoveAllProducts;
 	}
 
 	public Button getBtnShowProductInfoByNumber() {
